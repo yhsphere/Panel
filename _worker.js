@@ -4094,6 +4094,7 @@ var proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
 var dohURL = "https://cloudflare-dns.com/dns-query";
 var hashPassword;
 var panelVersion = "2.6.8";
+var defPage = "www.speedtest.net"
 var worker_default = {
   /**
    * @param {import("@cloudflare/workers-types").Request} request
@@ -4106,6 +4107,7 @@ var worker_default = {
       userID = env.UUID || userID;
       proxyIP = env.PROXYIP || proxyIP;
       dohURL = env.DNS_RESOLVER_URL || dohURL;
+      defPage = env.DEF_PAGE || defPage;
       trojanPassword = env.TROJAN_PASS || trojanPassword;
       hashPassword = import_js_sha256.default.sha224(trojanPassword);
       if (!isValidUUID(userID))
@@ -4328,10 +4330,14 @@ var worker_default = {
               }
             });
           default:
-            url.hostname = "www.speedtest.net";
-            url.protocol = "https:";
-            request = new Request(url, request);
-            return await fetch(request);
+            if (defPage.trim() == '') {
+              return new Response('', { status: 200 });
+            } else {
+              url.hostname = defPage;
+              url.protocol = "https:";
+              request = new Request(url, request);
+              return await fetch(request);
+            }
         }
       } else {
         return url.pathname.startsWith("/tr") ? await trojanOverWSHandler(request) : await vlessOverWSHandler(request);
