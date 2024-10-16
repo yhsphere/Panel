@@ -8558,13 +8558,13 @@ async function getNormalConfigs(proxySettings, hostName, client) {
       const configType = isCustomAddr ? "C" : "";
       const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
       const host = isCustomAddr ? customCdnHost : hostName;
-      const path = `$vless${getWebsocketPath(16)}${proxyIP2 ? `/${encodeURIComponent(btoa(proxyIP2))}` : ""}${earlyData}`;
+      const path = `${getWebsocketPath(16)}${proxyIP2 ? `/${encodeURIComponent(btoa(proxyIP2))}` : ""}${earlyData}`;
       const trojanIndex = vlessConfigs ? proxyIndex + totalCount : proxyIndex;
       const vlessRemark = encodeURIComponent(generateRemark(proxyIndex, port, addr, cleanIPs, "VLESS", configType));
       const trojanRemark = encodeURIComponent(generateRemark(trojanIndex, port, addr, cleanIPs, "Trojan", configType));
       const tlsFields = defaultHttpsPorts.includes(port) ? `&security=tls&sni=${sni}&fp=randomized&alpn=${alpn}` : "&security=none";
       if (vlessConfigs) {
-        vlessConfs += `${atob("dmxlc3M")}://${userID}@${addr}:${port}?path=/${path}&encryption=none&host=${host}&type=ws${tlsFields}#${vlessRemark}
+        vlessConfs += `${atob("dmxlc3M")}://${userID}@${addr}:${port}?path=/vless${path}&encryption=none&host=${host}&type=ws${tlsFields}#${vlessRemark}
 `;
       }
       if (trojanConfigs) {
