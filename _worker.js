@@ -4330,7 +4330,7 @@ var worker_default = {
               }
             });
           default:
-            if (defPage.trim() == '') {
+            if (defPage.trim() === '') {
               return new Response('', { status: 200 });
             } else {
               url.hostname = defPage;
@@ -4340,7 +4340,14 @@ var worker_default = {
             }
         }
       } else {
-        return url.pathname.startsWith("/tr") ? await trojanOverWSHandler(request) : await vlessOverWSHandler(request);
+        if (url.pathname.startsWith(`/vless${getWebsocketPath(16)}`)) {
+          return await vlessOverWSHandler(request);
+        }
+        if (url.pathname.startsWith(`/tr${getWebsocketPath(16)}`)) {
+          return await trojanOverWSHandler(request);
+        }
+        return new Response('', { status: 200 });
+        // return url.pathname.startsWith("/tr") ? await trojanOverWSHandler(request) : await vlessOverWSHandler(request);
       }
     } catch (err) {
       const errorPage = renderErrorPage("Something went wrong!", err, false);
@@ -5089,14 +5096,8 @@ function randomUpperCase(str) {
   }
   return result;
 }
-function getRandomPath(length) {
-  let result = "";
-  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  const charactersLength = characters.length;
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
+function getWebsocketPath(length) {
+  return userID;
 }
 async function resolveDNS(domain) {
   const dohURLv4 = `${dohURL}?name=${encodeURIComponent(domain)}&type=A`;
@@ -7167,7 +7168,7 @@ function buildXrayVLESSOutbound(tag2, address, port, host, sni, proxyIP2, isFrag
           Host: host,
           "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
         },
-        path: `/${getRandomPath(16)}${proxyIP2 ? `/${btoa(proxyIP2)}` : ""}?ed=2560`
+        path: `/vless${getWebsocketPath(16)}${proxyIP2 ? `/${btoa(proxyIP2)}` : ""}?ed=2560`
       }
     },
     tag: tag2
@@ -7207,7 +7208,7 @@ function buildXrayTrojanOutbound(tag2, address, port, host, sni, proxyIP2, isFra
         headers: {
           Host: host
         },
-        path: `/tr${getRandomPath(16)}${proxyIP2 ? `/${btoa(proxyIP2)}` : ""}?ed=2560`
+        path: `/tr${getWebsocketPath(16)}${proxyIP2 ? `/${btoa(proxyIP2)}` : ""}?ed=2560`
       }
     },
     tag: tag2
@@ -7936,7 +7937,7 @@ async function getClashNormalConfig(env, proxySettings, hostName) {
         const host = isCustomAddr ? customCdnHost : hostName;
         if (protocol === "VLESS") {
           remark = generateRemark(proxyIndex, port, addr, cleanIPs, protocol, configType).replace(" : ", " - ");
-          path = `/${getRandomPath(16)}${proxyIP2 ? `/${btoa(proxyIP2)}` : ""}`;
+          path = `/vless${getWebsocketPath(16)}${proxyIP2 ? `/${btoa(proxyIP2)}` : ""}`;
           VLESSOutbound = buildClashVLESSOutbound(
             chainProxy ? `proxy-${proxyIndex}` : remark,
             addr,
@@ -7952,7 +7953,7 @@ async function getClashNormalConfig(env, proxySettings, hostName) {
         }
         if (protocol === "Trojan" && defaultHttpsPorts.includes(port)) {
           remark = generateRemark(proxyIndex, port, addr, cleanIPs, protocol, configType).replace(" : ", " - ");
-          path = `/tr${getRandomPath(16)}${proxyIP2 ? `/${btoa(proxyIP2)}` : ""}`;
+          path = `/tr${getWebsocketPath(16)}${proxyIP2 ? `/${btoa(proxyIP2)}` : ""}`;
           TrojanOutbound = buildClashTrojanOutbound(
             chainProxy ? `proxy-${proxyIndex}` : remark,
             addr,
@@ -8221,7 +8222,7 @@ function buildSingBoxRoutingRules(proxySettings, isWarp) {
 }
 function buildSingBoxVLESSOutbound(proxySettings, remark, address, port, host, sni, allowInsecure, isFragment) {
   const { lengthMin, lengthMax, intervalMin, intervalMax, proxyIP: proxyIP2 } = proxySettings;
-  const path = `/${getRandomPath(16)}${proxyIP2 ? `/${btoa(proxyIP2)}` : ""}`;
+  const path = `/vless${getWebsocketPath(16)}${proxyIP2 ? `/${btoa(proxyIP2)}` : ""}`;
   const tls = defaultHttpsPorts.includes(port) ? true : false;
   let outbound = {
     type: "vless",
@@ -8261,7 +8262,7 @@ function buildSingBoxVLESSOutbound(proxySettings, remark, address, port, host, s
 }
 function buildSingBoxTrojanOutbound(proxySettings, remark, address, port, host, sni, allowInsecure, isFragment) {
   const { lengthMin, lengthMax, intervalMin, intervalMax, proxyIP: proxyIP2 } = proxySettings;
-  const path = `/tr${getRandomPath(16)}${proxyIP2 ? `/${btoa(proxyIP2)}` : ""}`;
+  const path = `/tr${getWebsocketPath(16)}${proxyIP2 ? `/${btoa(proxyIP2)}` : ""}`;
   const tls = defaultHttpsPorts.includes(port) ? true : false;
   let outbound = {
     type: "trojan",
@@ -8557,7 +8558,7 @@ async function getNormalConfigs(proxySettings, hostName, client) {
       const configType = isCustomAddr ? "C" : "";
       const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
       const host = isCustomAddr ? customCdnHost : hostName;
-      const path = `${getRandomPath(16)}${proxyIP2 ? `/${encodeURIComponent(btoa(proxyIP2))}` : ""}${earlyData}`;
+      const path = `$vless${getWebsocketPath(16)}${proxyIP2 ? `/${encodeURIComponent(btoa(proxyIP2))}` : ""}${earlyData}`;
       const trojanIndex = vlessConfigs ? proxyIndex + totalCount : proxyIndex;
       const vlessRemark = encodeURIComponent(generateRemark(proxyIndex, port, addr, cleanIPs, "VLESS", configType));
       const trojanRemark = encodeURIComponent(generateRemark(trojanIndex, port, addr, cleanIPs, "Trojan", configType));
