@@ -4093,7 +4093,7 @@ var defaultHttpsPorts = ["443", "8443", "2053", "2083", "2087", "2096"];
 var proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
 var dohURL = "https://cloudflare-dns.com/dns-query";
 var hashPassword;
-var panelVersion = "2.6.9";
+var panelVersion = "2.7";
 var defPage = "www.speedtest.net"
 var worker_default = {
   /**
